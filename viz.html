@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title> Vis </title>
+    <title>Boston Crime Data Visualization </title>
     <link rel = "stylesheet" href = "style.css" type = "text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
@@ -50,10 +50,64 @@
           content: "Description: " + typeDescription + "<br/>Date: " + date + "<br />Street Name: " + streetname + "<br />District: " + district + "<br />Shooting: " + shooting + "<br />Domestic: " + domestic + "<br />Weapon: " + weaponType,
           maxWidth: 400
         });
-        var marker = new google.maps.Marker({
-          position: new google.maps.LatLng(x,y),
-          map: map
-        });
+
+        var typeDescription = typeDescription.toLowerCase();
+
+        // RED MARKERS
+        if(typeDescription.includes("32gun") || typeDescription.includes("aggravated assault") || typeDescription.includes("ballist") || typeDescription.includes("bomb")
+         || typeDescription.includes("death investigation") || typeDescription.includes("explos") || typeDescription.includes("firearm") || typeDescription.includes("homicide")
+         || typeDescription.includes("manslaug") || typeDescription.includes("missing person reported") || typeDescription.includes("persmiss") || typeDescription.includes("robbery")
+         || typeDescription.includes("rape and attempted") || typeDescription.includes("weapons charge")){
+
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(x,y),
+            icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            map: map
+          });
+        }
+        //YELLOW MARKERS
+        else if(typeDescription.includes("arson") || typeDescription.includes("auto theft") || typeDescription.includes("benoprop") || typeDescription.includes("biothreat")
+          || typeDescription.includes("commercial burglary") || typeDescription.includes("crimes against children") || typeDescription.includes("criminal harassment") || typeDescription.includes("disorderly")
+          || typeDescription.includes("harass") || typeDescription.includes("hatecrim") || typeDescription.includes("indecent assault") || typeDescription.includes("invper")
+          || typeDescription.includes("larceny") || typeDescription.includes("offenses against child") || typeDescription.includes("other burglary")  || typeDescription.includes("residential burglary")
+          || typeDescription.includes("simple assault") || typeDescription.includes("stolen property") || typeDescription.includes("vandalism")){
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(x,y),
+            icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+            map: map
+          });
+        }
+        //PURPLE MARKERS
+        else if(typeDescription.includes("argue") || typeDescription.includes("arrest") || typeDescription.includes("assembly or gathering") || typeDescription.includes("drug charges")
+         || typeDescription.includes("drug violation") || typeDescription.includes("embezellment") || typeDescription.includes("embezzlement") || typeDescription.includes("gather")
+         || typeDescription.includes("hazardous") || typeDescription.includes("invprop") || typeDescription.includes("invveh") || typeDescription.includes("investigate person")
+         || typeDescription.includes("investigate property") || typeDescription.includes("pubdrink") || typeDescription.includes("restrain") || typeDescription.includes("search warrant")
+         || typeDescription.includes("searchwarr") || typeDescription.includes("trespass") || typeDescription.includes("violations") || typeDescription.includes("warrant arrest")){
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(x,y),
+            icon: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png',
+            map: map
+          });
+        }
+        //BLUE MARKERS
+        else if(typeDescription.includes("burgtools") || typeDescription.includes("prison") || typeDescription.includes("prostitution") || typeDescription.includes("sex offender")
+          || typeDescription.includes("sexreg")){
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(x,y),
+            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            map: map
+          });
+        }
+        //GREEN MARKERS
+        else{
+
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(x,y),
+            icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+            map: map
+          });
+        }
+
         marker.addListener('click', function() {
           infowindow.open(map, marker);
         });
@@ -87,15 +141,48 @@
         });
       }
 
+      function filter(){
+        var shooting = document.getElementById('shooting').checked;
+        var district = document.getElementById('district').value;
+        var year = document.getElementById('year').value;
+        var crime = document.getElementById('crime').value;
+        var num = markersArray.length;
+
+        clearMarkers();
+        url = 'https://data.cityofboston.gov/resource/7cdf-6fgx.json?$select=*';
+
+        //if(shooting && district != "")
+          //url += '&shooting=yes&reptdistrict=' + district;
+        if(district != "")
+          url += '&reptdistrict=' + district;
+        if(shooting)
+          url += '&shooting=yes';
+        if(year != "")
+          url += '&year=' + year;
+        if(crime != "")
+          url += '&incident_type_description=' + crime;
+
+        // Retrieve our data and plot it
+        $.getJSON(url, function(data, textstatus) {
+              console.log(data);
+              $.each(data, function(i, entry) {
+                addMarker(entry.location.latitude, entry.location.longitude, entry.reptdistrict, entry.incident_type_description, entry.fromdate, entry.weapontype,
+                          entry.shooting, entry.domestic, entry.streetname,  map);
+              });
+        });
+      }
+
     </script>
   </head>
   <body bgcolor = "#e6e6e6">
     <div id = "sidebar">
       <br />
       <div class = "sidebar-item">
-        <p class = "title">Boston Crime Incident Visualization</p>
+        <p class = "title">Boston Crime Visualization</p>
         <p class = "text">This web application plots crime incident data across the city of Boston using the Google Maps API and allows users to sort based on different criteria. The data
                           set is open to the public and can be viewed at the <a href="https://data.cityofboston.gov/" target="_blank">CityofBoston.gov</a></p>
+
+        Visit our <a href="faq.html" target="_blank">FAQ</a>
       </div>
 
       <br />
@@ -111,6 +198,128 @@
         <div class="sidebar-item">
           <button id="search" type="button" class="btn btn-success" onclick="changeNum()">Show</button>
         </div>
+
+        <br />
+        <br />
+
+        <div class = "sidebar-item">
+          <p class = "title"> Show only: </p>
+          <div class="checkbox">
+            <label><input id="shooting" type="checkbox">Shootings</label>
+          </div>
+        </div>
+        <br />
+        <div class="sidebar-item">
+          <label>District<select class="form-control" id="district">
+  					<option></option>
+            <option value="A1">A1</option>
+            <option value="A15">A15</option>
+            <option value="A7">A7</option>
+            <option value="B2">B2</option>
+            <option value="B3">B3</option>
+            <option value="C11">C11</option>
+            <option value="C6">C6</option>
+            <option value="D14">D14</option>
+            <option value="D4">D4</option>
+            <option value="E13">E13</option>
+            <option value="E18">E18</option>
+            <option value="E5">E5</option>
+  				</select></label>
+        </div>
+        <div class="sidebar-item">
+          <label>Year<select class="form-control" id="year">
+  					<option></option>
+            <option value="2015">2015</option>
+            <option value="2014">2014</option>
+            <option value="2013">2013</option>
+            <option value="2012">2012</option>
+  				</select></label>
+        </div>
+        <div class="sidebar-item">
+          <label>Crime<select class="form-control" id="crime">
+  					<option></option>
+            <option value="32gun">32Gun</option>
+            <option value="aggravated assault">Aggravated Assault</option>
+            <option value="arson">Arson</option>
+            <option value="auto theft">Auto Theft</option>
+            <option value="argue">Argue</option>
+            <option value="arrest">Arrest</option>
+            <option value="assembly or gathering violations">Assembly or Gathering Violations</option>
+            <option value="auto theft recovery">Auto Theft Recovery</option>
+            <option value="benoprop">Breaking and Entering of Property</option>
+            <option value="ballist">Ballist</option>
+            <option value="ballistics">Ballistics</option>
+            <option value="biothreat">Bio Threat</option>
+            <option value="bomb">Bomb</option>
+            <option value="bomb hoax">Bomb Hoax</option>
+            <option value="burgtools">Burglary Tools</option>
+            <option value="commercial burglary">Commercial Burglary</option>
+            <option value="crimes against children">Crimes Against Children</option>
+            <option value="confidence games">Confidence Games</option>
+            <option value="criminal harassment">Criminal Harassment</option>
+            <option value="death investigation">Death Investigation</option>
+            <option value="disorderly">Disorderly</option>
+            <option value="drug charges">Drug Charges</option>
+            <option value="disorderly conduct">Disorderly Conduct</option>
+            <option value="drug violation">Drug Violation</option>
+            <option value="embezellment">Embezellment</option>
+            <option value="explos">Explosives</option>
+            <option value="firearm discovery">Firearm Discovery</option>
+            <option value="firearm violations">Firearm Violations</option>
+            <option value="gather">Gather</option>
+            <option value="homicide">Homicide</option>
+            <option value="harass">Harassment</option>
+            <option value="hatecrim">Hate Crime</option>
+            <option value="hazardous">Hazardous</option>
+            <option value="indecent assault">Indecent Assault</option>
+            <option value="invper">Invasion of Persons</option>
+            <option value="invprop">Invasion of Property</option>
+            <option value="invveh">Invasion of Vehicle</option>
+            <option value="investigate person">Investigate Person</option>
+            <option value="investigate property">Investigate Property</option>
+            <option value="larceny from motor vehicle">Larcent from Motor Vehicle</option>
+            <option value="larceny">Larceny</option>
+            <option value="mvacc">MVAcc</option>
+            <option value="manslaug">Manslaughter</option>
+            <option value="missing person located">Missing Person Located</option>
+            <option value="missing person reported">Missing Person Reported</option>
+            <option value="other">Other</option>
+            <option value="other larceny">Other Larceny</option>
+            <option value="offenses against child/family">Offenses Against Child/Family</option>
+            <option value="other burglary">Other Burglary</option>
+            <option value="prison">Prison</option>
+            <option value="prostitution charges">Prostitution Charges</option>
+            <option value="persloc">Person Located</option>
+            <option value="persmiss">Persons Missing</option>
+            <option value="police service incidents">police Service Incidents</option>
+            <option value="prisoner related incidents">Prisoner related Incidents</option>
+            <option value="prostitution">Prostitution</option>
+            <option value="pubdrink">Public Drinking</option>
+            <option value="residential burglary">Residential Burglary</option>
+            <option value="robbery">Robbery</option>
+            <option value="rape and attempted">Rape and Attempted</option>
+            <option value="recovered stolen property">Recovered Stolen Property</option>
+            <option value="restrain">Restrain</option>
+            <option value="restraining order violations">Restraining Order Violations</option>
+            <option value="runaway">Runaway</option>
+            <option value="simmple assault">Simple Assault</option>
+            <option value="stolen property charges">Stolen Property Charges</option>
+            <option value="searchwarr">Search Warrants</option>
+            <option value="sexreg">Sex Offender Registration</option>
+            <option value="trespass">Trespassing</option>
+            <option value="vandalism">Vandalism</option>
+            <option value="violations">Violations</option>
+            <option value="weapons charge">Weapons Charge</option>
+            <option value="warrant arrests">Warrant Arrests</option>
+  				</select></label>
+        </div>
+        <div class="sidebar-item">
+          <button id="search" type="button" class="btn btn-success" onclick="filter()">Filter</button>
+        </div>
+
+        <br />
+        <br />
+        <br />
 
         </form>
     </div>
